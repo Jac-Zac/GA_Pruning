@@ -1,0 +1,28 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+.pytest_cache/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Weights and biases api-key
+.env
+
+# Additional
+**/wandb/*
+**/*.pth
+**/*.safetensors
+**/*.log
+**/.DS_Store
+
+# Generated and machine-local outputs
+/artifacts/
+/logs/
+/report.html
+/notebooks/__marimo__/
+/notebooks/layouts/
