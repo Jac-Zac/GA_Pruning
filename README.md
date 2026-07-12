@@ -28,9 +28,11 @@ uv run python main.py train
 uv run python main.py structured
 uv run python main.py unstructured
 uv run python main.py ablation
+uv run python main.py multiobjective
 ```
 
-These commands produce `structured.json`, `unstructured.json`, and `ablation.json`.
+The `multiobjective` command uses Platypus NSGA-II to maximize validation accuracy and effective structured parameter sparsity simultaneously.
+The commands produce `structured.json`, `unstructured.json`, `ablation.json`, and `multiobjective.json`.
 Run the offline tests with `uv run pytest -q`. For the cluster workflow, see [docs/ORFEO.md](docs/ORFEO.md); for the complete methodology and fairness rules, see [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md).
 
 ## Repository map

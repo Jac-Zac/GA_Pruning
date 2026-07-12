@@ -215,6 +215,7 @@ source = { editable = "." }
 dependencies = [
     { name = "marimo" },
     { name = "numpy" },
+    { name = "platypus-opt" },
     { name = "plotly" },
     { name = "python-dotenv" },
     { name = "safetensors" },
@@ -232,6 +233,7 @@ dev = [
 requires-dist = [
     { name = "marimo", specifier = ">=0.23.13" },
     { name = "numpy", specifier = ">=2.3.3" },
+    { name = "platypus-opt", specifier = ">=1.4.1" },
     { name = "plotly", specifier = ">=6.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "safetensors", specifier = ">=0.4.0" },
@@ -769,6 +771,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/18/f0/a5595c1e8c3ae44b9828cb2f0fa8155e5095ef04d6327b8f61cf44a3df85/pillow-12.3.0-cp315-cp315t-win32.whl", hash = "sha256:1657923d2d45afb66526e5b933e5b3052e6bdea196c90d3abb2424e18c77dae8", size = 6474384, upload-time = "2026-07-01T11:56:18.855Z" },
     { url = "https://files.pythonhosted.org/packages/e4/04/62bcd9f844984c5938d3b05264a61d797a29d3e0812341a8204af70bbdee/pillow-12.3.0-cp315-cp315t-win_amd64.whl", hash = "sha256:8cd2f7bdda092d99c9fc2fb7391354f306d01443d22785d0cbfafa2e2c8bb418", size = 7243537, upload-time = "2026-07-01T11:56:21.214Z" },
     { url = "https://files.pythonhosted.org/packages/3d/68/1f3066acedf37673694a7141381d8f811ae97f30d34413d236abe7d489f1/pillow-12.3.0-cp315-cp315t-win_arm64.whl", hash = "sha256:06ff022112bc9cbf83b60f8e028d94ad87b60621706487e65f673de61610ab59", size = 2567491, upload-time = "2026-07-01T11:56:23.506Z" },
+]
+
+[[package]]
+name = "platypus-opt"
+version = "1.4.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/a2/032cfd9c716edeb386c431a841195b4d43c7c98dfba54982ece4dce5835d/platypus_opt-1.4.1.tar.gz", hash = "sha256:b341790be67354c2c964bb3431b9acc8a1a147aca9d9464a43720dc58b3895e8", size = 442119, upload-time = "2024-10-07T02:39:09.047Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/03/35/cc1b9e3942af4ba74330736ee369cf29c3cc517823812d74f665737239ae/Platypus_Opt-1.4.1-py3-none-any.whl", hash = "sha256:9c22883a3ffd91bd3a6dfb75412fc6b80368850fdb9b24f9e301a8cbf160fdda", size = 124351, upload-time = "2024-10-07T02:39:07.184Z" },
 ]
 
 [[package]]

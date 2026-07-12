@@ -82,9 +82,30 @@ class AblationConfig:
             raise ValueError("focus must be between 0 and 1")
 
 
+@dataclass(frozen=True)
+class MultiobjectiveConfig:
+    """Settings for one Platypus NSGA-II Pareto search."""
+
+    population_size: int = 100
+    max_evaluations: int = 25_000
+    batch_size: int = 1024
+    seed: int = 1337
+
+    def __post_init__(self) -> None:
+        if min(self.population_size, self.max_evaluations, self.batch_size) < 1:
+            raise ValueError("multiobjective search sizes must be positive")
+        if self.population_size < 2:
+            raise ValueError("population_size must be at least 2")
+        if self.max_evaluations < self.population_size:
+            raise ValueError("max_evaluations must cover the initial population")
+
+    def as_dict(self) -> dict:
+        return asdict(self)
+
+
 @dataclass
 class ExperimentContext:
-    config: SearchConfig
+    config: SearchConfig | MultiobjectiveConfig
     device: torch.device
     model: SimpleMLP
     model_kwargs: dict
@@ -95,7 +116,7 @@ class ExperimentContext:
     dense_accuracy: float
 
     @classmethod
-    def load(cls, config: SearchConfig) -> "ExperimentContext":
+    def load(cls, config: SearchConfig | MultiobjectiveConfig) -> "ExperimentContext":
         device = get_device()
         model_kwargs = {"num_classes": 10, "hidden_sizes": DEFAULT_HIDDEN_SIZES}
         model = load_pretrained_model(

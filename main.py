@@ -7,9 +7,11 @@ import sys
 from gamo.run.ablation import run_ablation
 from gamo.run.experiment import (
     AblationConfig,
+    MultiobjectiveConfig,
     SearchConfig,
     StructuredConfig,
 )
+from gamo.run.multiobjective import run_multiobjective
 from gamo.run.structured import run_structured
 from gamo.run.unstructured import run_unstructured_comparison
 from gamo.train.train import train_model
@@ -27,6 +29,14 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("structured", help="run the structured comparison")
     commands.add_parser("unstructured", help="run the weight-level comparison")
     commands.add_parser("ablation", help="run the structured-GA sensitivity study")
+    multiobjective = commands.add_parser(
+        "multiobjective",
+        help="find the accuracy/sparsity Pareto front with Platypus NSGA-II",
+    )
+    multiobjective.add_argument("--population-size", type=int, default=100)
+    multiobjective.add_argument("--evaluations", type=int, default=25_000)
+    multiobjective.add_argument("--batch-size", type=int, default=1024)
+    multiobjective.add_argument("--seed", type=int, default=1337)
     return parser
 
 
@@ -35,6 +45,16 @@ def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     if args.command == "train":
         train_model(force=args.force)
+        return
+    if args.command == "multiobjective":
+        run_multiobjective(
+            MultiobjectiveConfig(
+                population_size=args.population_size,
+                max_evaluations=args.evaluations,
+                batch_size=args.batch_size,
+                seed=args.seed,
+            )
+        )
         return
 
     search = SearchConfig()
