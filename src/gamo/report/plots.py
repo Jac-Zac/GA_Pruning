@@ -159,7 +159,7 @@ def fig_accuracy_snapshot(
         x=dense_acc,
         line=dict(color=COL["Dense"], dash="dot", width=1.5),
         annotation_text=f"dense {dense_acc:.1f}%",
-        annotation_position="top left",
+        annotation_position="top right",
     )
     fig.update_layout(
         **_plotly_layout(
@@ -252,9 +252,15 @@ def fig_distribution(
 # ---------------------------------------------------------------------------
 # Search convergence curves
 # ---------------------------------------------------------------------------
-def fig_progress(curves: dict[str, list[float]]) -> go.Figure:
+def fig_progress(curves: dict[str, list[float]], dense_val_acc: float) -> go.Figure:
     """Plot best validation accuracy per generation for search methods."""
     fig = go.Figure()
+    fig.add_hline(
+        y=dense_val_acc,
+        line=dict(color=COL["Dense"], dash="dot", width=1.5),
+        annotation_text=f"dense validation {dense_val_acc:.1f}%",
+        annotation_position="top left",
+    )
     for key, curve in curves.items():
         if not (
             key.startswith("GA-")
@@ -280,7 +286,7 @@ def fig_progress(curves: dict[str, list[float]]) -> go.Figure:
         **_plotly_layout(
             title="Search convergence — best validation accuracy per generation",
             xaxis_title="Generation",
-            yaxis_title="Best val accuracy (%)",
+            yaxis_title="Best validation accuracy (%)",
             hovermode="x unified",
             height=420,
         )
@@ -291,9 +297,17 @@ def fig_progress(curves: dict[str, list[float]]) -> go.Figure:
 # ---------------------------------------------------------------------------
 # Figure — crossover convergence
 # ---------------------------------------------------------------------------
-def fig_crossover_convergence(curves: dict[str, list[float]], sp: float) -> go.Figure:
+def fig_crossover_convergence(
+    curves: dict[str, list[float]], sp: float, dense_val_acc: float
+) -> go.Figure:
     """Plot the convergence curves for each crossover strategy."""
     fig = go.Figure()
+    fig.add_hline(
+        y=dense_val_acc,
+        line=dict(color=COL["Dense"], dash="dot", width=1.5),
+        annotation_text=f"dense validation {dense_val_acc:.1f}%",
+        annotation_position="top left",
+    )
     for key in sorted(curves):
         if not key.startswith("GA-"):
             continue
@@ -314,7 +328,7 @@ def fig_crossover_convergence(curves: dict[str, list[float]], sp: float) -> go.F
         **_plotly_layout(
             title=f"Crossover convergence at {sp:.0%} sparsity",
             xaxis_title="Generation",
-            yaxis_title="Best val accuracy (%)",
+            yaxis_title="Best validation accuracy (%)",
             hovermode="x unified",
             height=420,
         )

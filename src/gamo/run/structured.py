@@ -117,6 +117,7 @@ def _save(
         },
         "sparsities": list(config.search.sparsities),
         "dense_acc": context.dense_accuracy,
+        "dense_val_acc": context.dense_val_accuracy,
         "methods": results,
         "config": {
             **config.as_dict(),

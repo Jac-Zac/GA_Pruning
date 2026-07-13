@@ -48,6 +48,7 @@ def load_report_artifacts() -> tuple[dict | None, dict | None, dict | None, str 
         "architecture",
         "methods",
         "dense_acc",
+        "dense_val_acc",
         "config",
     }
     if sweep is None:

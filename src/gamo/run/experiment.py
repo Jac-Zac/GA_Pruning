@@ -91,6 +91,7 @@ class ExperimentContext:
     original_weights: torch.Tensor
     val_loader: object
     test_loader: object
+    dense_val_accuracy: float
     dense_accuracy: float
 
     @classmethod
@@ -104,6 +105,9 @@ class ExperimentContext:
         _, val_loader, test_loader = get_dataloaders(
             batch_size=config.batch_size, seed=config.seed
         )
+        dense_val_accuracy = eval_weights(
+            SimpleMLP, model_kwargs, original_weights, device, val_loader
+        )["accuracy"]
         dense_accuracy = eval_weights(
             SimpleMLP, model_kwargs, original_weights, device, test_loader
         )["accuracy"]
@@ -115,5 +119,6 @@ class ExperimentContext:
             original_weights=original_weights,
             val_loader=val_loader,
             test_loader=test_loader,
+            dense_val_accuracy=dense_val_accuracy,
             dense_accuracy=dense_accuracy,
         )

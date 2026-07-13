@@ -345,7 +345,13 @@ def _(mo, sweep):
 
 
 @app.cell(hide_code=True)
-def _(STRUCTURED_REPORT_METHODS, ablation, fig_accuracy_vs_sparsity, mo, sweep):
+def _(
+    STRUCTURED_REPORT_METHODS,
+    ablation,
+    fig_accuracy_vs_sparsity,
+    mo,
+    sweep,
+):
     _methods = list(STRUCTURED_REPORT_METHODS)
     _focus = ablation["config"]["focus"]
     _figure = fig_accuracy_vs_sparsity(
@@ -386,7 +392,13 @@ def _(STRUCTURED_REPORT_METHODS, ablation, fig_accuracy_vs_sparsity, mo, sweep):
 
 
 @app.cell(hide_code=True)
-def _(STRUCTURED_METHOD_LABELS, STRUCTURED_REPORT_METHODS, ablation, mo, sweep):
+def _(
+    STRUCTURED_METHOD_LABELS,
+    STRUCTURED_REPORT_METHODS,
+    ablation,
+    mo,
+    sweep,
+):
     _focus = ablation["config"]["focus"]
     explorer_sparsity = mo.ui.slider(
         steps=[round(value * 100) for value in sweep["sparsities"]],
@@ -439,7 +451,12 @@ def _(STRUCTURED_METHOD_LABELS, STRUCTURED_REPORT_METHODS, ablation, mo, sweep):
             ),
         ]
     )
-    return explorer_method, explorer_panel, explorer_sparsity, explorer_weight_masks
+    return (
+        explorer_method,
+        explorer_panel,
+        explorer_sparsity,
+        explorer_weight_masks,
+    )
 
 
 @app.cell(hide_code=True)
@@ -532,7 +549,7 @@ def _(
             ],
             widths="equal",
         )
-        _convergence = mo.as_html(fig_progress(_curves))
+        _convergence = mo.as_html(fig_progress(_curves, sweep["dense_val_acc"]))
         _allocation = mo.as_html(
             fig_distribution(
                 _allocations,
@@ -552,7 +569,7 @@ def _(
             )
         )
         _convergence = (
-            mo.as_html(fig_progress({_key: _view["curve"]}))
+            mo.as_html(fig_progress({_key: _view["curve"]}, sweep["dense_val_acc"]))
             if _view["curve"]
             else mo.md(
                 "This deterministic baseline ranks neurons once and has no search curve."
@@ -802,7 +819,9 @@ def _(
                 ]
             ),
             "Crossover comparison": mo.as_html(
-                fig_crossover_convergence(_crossover_curves, _focus)
+                fig_crossover_convergence(
+                    _crossover_curves, _focus, sweep["dense_val_acc"]
+                )
             ),
             "Training details": mo.md(f"""
                 | Setting | Value |
