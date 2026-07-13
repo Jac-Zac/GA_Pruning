@@ -38,15 +38,9 @@ class SearchConfig:
             raise ValueError("sparsities must be unique")
         if self.num_seeds < 1:
             raise ValueError("num_seeds must be at least 1")
-        if (
-            min(
-                self.pop_size,
-                self.num_iterations,
-                self.tournament_size,
-                self.batch_size,
-            )
-            < 1
-        ):
+        if self.pop_size < 2:
+            raise ValueError("pop_size must be at least 2")
+        if min(self.num_iterations, self.tournament_size, self.batch_size) < 1:
             raise ValueError("search sizes must be positive")
 
     @property

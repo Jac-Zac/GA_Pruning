@@ -10,7 +10,6 @@ from gamo.ga.search import genetic_search
 from gamo.ga.unstructured import (
     create_batched_fitness_func,
     expand_weight_masks,
-    extract_weight_values,
     magnitude_pruning_mask,
     random_weight_mask,
     weight_parameter_selector,
@@ -53,7 +52,7 @@ def run_ga_unstructured(
         "num_classes": model.num_classes,
     }
     weight_selector = weight_parameter_selector(model).to(device)
-    prunable_weights = extract_weight_values(original_weights, weight_selector)
+    prunable_weights = original_weights[weight_selector]
     random_mask = expand_weight_masks(
         random_weight_mask(prunable_weights.numel(), sparsity, device), weight_selector
     )
@@ -107,7 +106,7 @@ def run_unstructured_comparison(config: SearchConfig) -> dict:
     context = ExperimentContext.load(config)
     model = context.model
     selector = weight_parameter_selector(model).to(context.device)
-    prunable_weights = extract_weight_values(context.original_weights, selector)
+    prunable_weights = context.original_weights[selector]
     output_path = results_path("unstructured.json", mkdir=True)
 
     print(f"Device: {context.device}")

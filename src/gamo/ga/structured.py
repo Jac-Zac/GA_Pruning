@@ -50,8 +50,6 @@ def neuron_importance(model: SimpleMLP) -> torch.Tensor:
 
 
 def _mask_from_scores(scores: torch.Tensor, keep_count: int) -> torch.Tensor:
-    if not 0 <= keep_count <= scores.numel():
-        raise ValueError("keep_count must be within the score length")
     mask = torch.zeros(scores.numel(), dtype=torch.bool)
     if keep_count:
         mask[scores.topk(keep_count).indices] = True
@@ -67,8 +65,6 @@ def neuron_magnitude_mask(model: SimpleMLP, sparsity: float) -> torch.Tensor:
 def _proportional_layer_keeps(layer_sizes: list[int], total_keep: int) -> list[int]:
     """Allocate an exact global budget proportionally across layers."""
     total = sum(layer_sizes)
-    if not 0 <= total_keep <= total:
-        raise ValueError("total_keep must be within the total layer size")
     if total == 0:
         return [0] * len(layer_sizes)
     raw = [total_keep * size / total for size in layer_sizes]

@@ -14,7 +14,6 @@ from gamo.ga.operators import (
 from gamo.ga.unstructured import (
     create_batched_fitness_func,
     expand_weight_masks,
-    extract_weight_values,
     magnitude_pruning_mask,
     random_weight_mask,
     weight_parameter_selector,
@@ -51,7 +50,7 @@ def test_magnitude_pruning_keeps_the_largest_weights():
 def test_weight_masks_prune_only_weights_for_a_population():
     model = _model()
     selector = weight_parameter_selector(model)
-    values = extract_weight_values(flatten_params(model), selector)
+    values = flatten_params(model)[selector]
     masks = torch.ones(2, values.numel(), dtype=torch.bool)
     masks[1, : values.numel() // 2] = False
 

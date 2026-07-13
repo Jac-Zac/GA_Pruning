@@ -46,17 +46,6 @@ def weight_parameter_selector(model: nn.Module) -> torch.Tensor:
     )
 
 
-def extract_weight_values(
-    flat_parameters: torch.Tensor, weight_selector: torch.Tensor
-) -> torch.Tensor:
-    """Extract the prunable weights from a flattened parameter vector."""
-    if flat_parameters.numel() != weight_selector.numel():
-        raise ValueError(
-            "parameter vector and weight selector must have the same length"
-        )
-    return flat_parameters[weight_selector]
-
-
 def expand_weight_masks(
     weight_masks: torch.Tensor, weight_selector: torch.Tensor
 ) -> torch.Tensor:

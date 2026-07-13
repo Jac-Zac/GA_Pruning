@@ -114,8 +114,11 @@ def genetic_search(
     elitism: bool = True,
 ) -> SearchResult:
     """Evolve a fixed-cardinality bit-mask population."""
-    if iterations < 1 or tournament_size < 1:
-        raise ValueError("iterations and tournament_size must be positive")
+    if pop_size < 2 or iterations < 1 or tournament_size < 1:
+        raise ValueError(
+            "population size must be at least two; iterations and tournament_size "
+            "must be positive"
+        )
     if crossover not in {None, "uniform", "two_point"}:
         raise ValueError("crossover must be None, 'uniform', or 'two_point'")
     if crossover == "two_point" and n < 2:
@@ -140,9 +143,6 @@ def genetic_search(
         # Keep pop_size if elitism is enabled
         elite = population[generation_best].unsqueeze(0) if elitism else population[:0]
         offspring_count = pop_size - elite.shape[0]
-        if offspring_count == 0:
-            population = elite.clone()
-            continue
 
         # Crossover needs pairs, so temporarily round an odd child count up to even.
         draws = offspring_count + offspring_count % 2

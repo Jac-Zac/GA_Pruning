@@ -20,16 +20,7 @@ def _():
         repair_population,
         tournament_selection,
     )
-    from gamo.train.train import (
-        TRAIN_BATCH_SIZE,
-        TRAIN_EPOCHS,
-        TRAIN_LEARNING_RATE,
-        TRAIN_MIN_LEARNING_RATE,
-        TRAIN_SEED,
-        TRAIN_VALIDATION_SPLIT,
-        TRAIN_WEIGHT_DECAY,
-    )
-    from gamo.utils.data import FASHION_MNIST_NORMALIZATION
+    from gamo.ga.search import genetic_search
     from gamo.report.data import (
         STRUCTURED_METHOD_LABELS,
         STRUCTURED_REPORT_METHODS,
@@ -49,6 +40,16 @@ def _():
         fig_progress,
         fig_weight_matrix_heatmap,
     )
+    from gamo.train.train import (
+        TRAIN_BATCH_SIZE,
+        TRAIN_EPOCHS,
+        TRAIN_LEARNING_RATE,
+        TRAIN_MIN_LEARNING_RATE,
+        TRAIN_SEED,
+        TRAIN_VALIDATION_SPLIT,
+        TRAIN_WEIGHT_DECAY,
+    )
+    from gamo.utils.data import FASHION_MNIST_NORMALIZATION
 
     def load_image(path):
         if not os.path.exists(path):
@@ -73,6 +74,7 @@ def _():
         "normalization_std": FASHION_MNIST_NORMALIZATION[1][0],
     }
     ga_step_sources = {
+        "Complete evolution loop": inspect.getsource(genetic_search),
         "Initialization": inspect.getsource(random_population),
         "Selection": inspect.getsource(tournament_selection),
         "Crossover": inspect.getsource(crossover_population),
@@ -168,6 +170,11 @@ def _(mo, steps_img):
 @app.cell(hide_code=True)
 def _(ga_step_sources, mo):
     _summaries = {
+        "Complete evolution loop": """
+        1. Evaluate every mask using validation accuracy and retain the best seen mask.
+        2. Preserve the generation's elite, then select and cross parents.
+        3. Mutate and repair the children before evaluating the next generation.
+        """,
         "Initialization": """
         1. Draw one random score for every gene in every mask.
         2. Keep the `target_ones` highest-scoring genes in each row.
@@ -209,8 +216,8 @@ def _(ga_step_sources, mo):
         [
             mo.md("### Inspect the main GA steps"),
             mo.md(
-                "Choose an operator, then switch between a short explanation and the "
-                "exact implementation used by the experiments."
+                "Choose the complete loop or one operator, then switch between a short "
+                "explanation and the exact implementation used by the experiments."
             ),
             mo.ui.tabs(_step_tabs),
         ]
@@ -760,9 +767,9 @@ def _(
     _entries = unstructured["sparsities"]
     _focus = ablation["config"]["focus"]
     _crossover_curves = {
-        f"{method}@{_focus:.4f}": structured_explorer_view(
-            sweep, method, _focus
-        )["curve"]
+        f"{method}@{_focus:.4f}": structured_explorer_view(sweep, method, _focus)[
+            "curve"
+        ]
         for method in ("GA-uniform", "GA-two_point")
     }
     _effective_figure = fig_effective_sparsity_comparison(
