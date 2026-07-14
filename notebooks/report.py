@@ -31,6 +31,7 @@ def _():
         weight_layer_rows,
     )
     from gamo.report.plots import (
+        fig_ablation_accuracy,
         fig_accuracy_snapshot,
         fig_accuracy_vs_sparsity,
         fig_crossover_convergence,
@@ -85,6 +86,7 @@ def _():
         STRUCTURED_METHOD_LABELS,
         STRUCTURED_REPORT_METHODS,
         effective_sparsity_rows,
+        fig_ablation_accuracy,
         fig_accuracy_snapshot,
         fig_accuracy_vs_sparsity,
         fig_crossover_convergence,
@@ -244,7 +246,7 @@ def _(mo, sweep, training_protocol):
     climbing each receive **{_budget:,} mask evaluations per seed and sparsity**.
 
     Results use {_config["num_seeds"]} mask-search seeds. The checkpoint and data split stay
-    fixed, so error bars measure search randomness—not training uncertainty.
+    fixed, so error bars measure search randomness.
     """)
     return
 
@@ -328,7 +330,7 @@ def _(mo, sweep):
     _genome = sum(sweep["architecture"]["hidden_sizes"])
     mo.md(f"""
     ## 4. Structured approach: one bit per hidden neuron
-    > This is the regime where a GA has a real chance to help and pruning whole neurons can be materialized as a smaller dense network, unlike zeros scattered through a matrix.
+    > This is the regime where a GA has a real chance to help and pruning whole neurons can be materialized as a smaller dense network.
 
     The structured chromosome contains **{_genome} bits**, with one gene per hidden
     neuron. A zero disables that neuron's output;
@@ -678,73 +680,48 @@ def _(
 
 
 @app.cell(hide_code=True)
-def _(ablation, mo, sweep):
+def _(ablation, fig_ablation_accuracy, mo, sweep):
     _study = ablation["sensitivity"]
-    _canonical = _study["accuracies"][_study["values"].index("Canonical")]
+    _baseline = _study["settings"]["Canonical"]
     _focus = ablation["config"]["focus"]
-    _focus_index = sweep["sparsities"].index(_focus)
-    _main = sweep["methods"]["GA-uniform"]["accuracy"][_focus_index]
-    _seed = ablation["config"]["seed"]
     _num_seeds = ablation["config"]["num_seeds"]
     _budget = ablation["config"]["canonical_fitness_evaluations"]
-    _num_variants = len(_study["values"])
-    _raw_seed_text = f"{_seed}–{_seed + _num_seeds - 1}"
-    _seed_note = (
-        f"The main sweep and sensitivity study both use `{_raw_seed_text}`. "
-        "Reusing each repeat seed across sparsities pairs the comparisons without "
-        "making the masks identical: the sparsity constraint still changes the "
-        "search problem."
-    )
-    _rows = []
-    for _name, _group, _accuracy, _std in zip(
-        _study["values"],
-        _study["groups"],
-        _study["accuracies"],
-        _study["stds"],
-    ):
-        _settings = _study["settings"][_name]
-        _rows.append(
-            {
-                "Study": _group,
-                "Variant": (
-                    "Reference configuration" if _name == "Canonical" else _name
-                ),
-                "Population": _settings["pop_size"],
-                "Generations": _settings["n_gen"],
-                "Test accuracy": f"{_accuracy:.1f}%",
-                "Δ reference": f"{_accuracy - _canonical:+.1f} pp",
-                "Std": f"{_std:.1f} pp",
-            }
-        )
+    _first_seed = ablation["config"]["seed"]
+    _last_seed = _first_seed + _num_seeds - 1
+    _accuracy_figure = fig_ablation_accuracy(_study, sweep["dense_acc"], _focus)
+    _baseline_row = {
+        "Sparsity": f"{_focus:.0%}",
+        "Population": _baseline["pop_size"],
+        "Generations": _baseline["n_gen"],
+        "Evaluations": f"{_baseline['fitness_evaluations']:,}",
+        "Tournament": _baseline["t_size"],
+        "Crossover": _baseline["crossover"].replace("_", " ").title(),
+        "Elitism": "One elite" if _baseline["elitism"] else "Disabled",
+        "Mutation": ablation["config"]["mutation_rule"],
+        "Eval. batch": ablation["config"]["batch_size"],
+        "Seeds": f"{_first_seed}–{_last_seed}",
+        "Fitness": "Validation accuracy",
+        "Weights": "Frozen",
+    }
     mo.vstack(
         [
             mo.md(f"""
             ## 7. Sensitivity study
 
-            Each variant changes one GA choice, and population-size variants adjust
-            generations so every row keeps the same **{_budget:,}-evaluation budget**. All
-            {_num_variants} variants use the same {_num_seeds} raw streams
-            (`{_raw_seed_text}`), so the
-            comparisons are paired and fair within this study.
-
-            {_seed_note}
+            Mean test accuracy across {_num_seeds} search seeds; error bars show one
+            standard deviation. Every variant receives the same
+            **{_budget:,}-evaluation budget**.
             """),
-            mo.hstack(
-                [
-                    mo.stat(f"{_main:.1f}%", label=f"Main GA · {_focus:.0%}"),
-                    mo.stat(f"{_canonical:.1f}%", label="Sensitivity reference"),
-                    mo.stat(f"{_num_seeds}", label="Seeds per variant"),
-                ],
-                widths="equal",
-            ),
+            mo.md("### Canonical GA configuration"),
             mo.ui.table(
-                _rows,
+                [_baseline_row],
                 selection=None,
                 pagination=False,
                 show_search=False,
                 show_download=False,
                 show_data_types=False,
             ),
+            mo.as_html(_accuracy_figure),
         ]
     )
     return
@@ -755,15 +732,19 @@ def _(mo):
     mo.md("""
     ## 8. Conclusions
 
-    1. The weight-level chromosome is too large and weakly structured for this GA and
-       budget; magnitude pruning remains the appropriate unstructured winner.
-    2. A neuron-level chromosome makes the search operators useful and produces much
-       stronger high-sparsity masks than the included heuristics and equal-budget controls.
-    3. The central result is about **representation and search**—not a claim that genetic
-       algorithms universally beat magnitude pruning.
+    - The weight-level chromosome is *too large* and weakly structured for this GA and
+      evaluation budget; magnitude pruning remains the strongest unstructured method
+      tested.
+    - The neuron-level chromosome produces *stronger high-sparsity* masks and a compact
+      dense network that can deliver practical memory and computational savings.
 
-    The next step is to repeat the focused structured comparison across independently
-    trained checkpoints and benchmark compact-model latency on real hardware.
+    **Next steps**
+
+    - Repeat the structured comparison across independently trained checkpoints.
+    - Benchmark compact-model latency and memory use on real hardware, including edge
+      devices.
+    - Fine-tune the network after pruning to recover accuracy.
+    - Explore multi-objective optimization of accuracy, model size, and latency.
     """)
     return
 
@@ -842,8 +823,7 @@ def _(
                 **Selected references:** LeCun et al. (1990), *Optimal Brain Damage*;
                 Frankle & Carbin (2019), *The Lottery Ticket Hypothesis*; Gale et al.
                 (2019), *The State of Sparsity*; He & Xiao (2023), *Structured Pruning for
-                Deep CNNs*; Eiben & Smit (2011), *Parameter Tuning for Evolutionary
-                Algorithms*.
+                Deep CNNs*; Eiben & Smit (2011)
             """),
         }
     )

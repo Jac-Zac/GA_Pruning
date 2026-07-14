@@ -336,6 +336,60 @@ def fig_crossover_convergence(
     return fig
 
 
+def fig_ablation_accuracy(study: dict, dense_acc: float, sparsity: float) -> go.Figure:
+    """Compare final test accuracy for every sensitivity-study variant."""
+    names = list(study["values"])
+    display_names = [
+        "Baseline (canonical GA)" if name == "Canonical" else name for name in names
+    ]
+    accuracies = list(study["accuracies"])
+    stds = list(study["stds"])
+    group_colors = {
+        "Operators": "#c04851",
+        "Tournament size": "#5b8db8",
+        "Population size": "#b08968",
+    }
+    colors = [
+        INK if name == "Canonical" else group_colors[group]
+        for name, group in zip(names, study["groups"])
+    ]
+    fig = go.Figure(
+        go.Bar(
+            x=accuracies,
+            y=display_names,
+            orientation="h",
+            marker_color=colors,
+            error_x=dict(type="data", array=stds, visible=True),
+            text=[f"{accuracy:.1f}%" for accuracy in accuracies],
+            textposition="inside",
+            insidetextanchor="middle",
+            hovertemplate=(
+                "%{y}<br>mean test accuracy: %{x:.2f}%"
+                "<br>standard deviation: %{error_x.array:.2f} pp<extra></extra>"
+            ),
+        )
+    )
+    fig.add_vline(
+        x=dense_acc,
+        line=dict(color=COL["Dense"], dash="dot", width=1.5),
+        annotation_text=f"dense model {dense_acc:.1f}%",
+        annotation_position="top right",
+    )
+    fig.update_layout(
+        **_plotly_layout(
+            title=f"Sensitivity study at {sparsity:.0%} neuron sparsity",
+            xaxis_title="Test accuracy (%)",
+            yaxis_title="",
+            height=455,
+            margin=dict(l=175, r=70, t=55, b=42),
+            showlegend=False,
+        )
+    )
+    fig.update_xaxes(range=[0, max(dense_acc, *accuracies) * 1.08])
+    fig.update_yaxes(autorange="reversed")
+    return fig
+
+
 # ---------------------------------------------------------------------------
 # Effective sparsity comparison (structured vs unstructured)
 # ---------------------------------------------------------------------------
