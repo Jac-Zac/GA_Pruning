@@ -1,5 +1,7 @@
 # Genetic algorithms for neural-network pruning
 
+[![Open interactive report](https://img.shields.io/badge/Open_interactive_report-Marimo-3a8a94?logo=github&logoColor=white)](https://jac-zac.github.io/GA_Pruning/)
+
 ![showcase](./assets/pruning.png)
 
 This project studies how the mask representation changes genetic-algorithm pruning of an MLP (`784 → 256 → 256 → 256 → 10`) trained on FashionMNIST.
@@ -41,4 +43,21 @@ Run the offline tests with `uv run pytest -q`. For the cluster workflow, see [do
 | `src/gamo/ga/` | unstructured and structured genetic searches |
 | `src/gamo/run/` | canonical experiment protocol and result generation |
 | `notebooks/report.py` | artifact-only Marimo presentation |
+| `notebooks/report_wasm.py` | self-contained GitHub Pages presentation |
 | `scripts/run_orfeo.sh` | three-job final Slurm submission |
+
+## Deploy the interactive report
+
+The full experiment report is available as a Marimo notebook in
+[`notebooks/report.py`](notebooks/report.py). A lightweight, browser-compatible
+version with the same presentation and interactive result explorer lives in
+[`notebooks/report_wasm.py`](notebooks/report_wasm.py). It uses only the curated
+result files under `notebooks/public/`; it does not load checkpoints, datasets,
+logs, or PyTorch.
+
+To preview the deployable version locally:
+
+```bash
+uv run marimo export html-wasm notebooks/report_wasm.py -o dist --mode run --execute
+python -m http.server --directory dist
+```
